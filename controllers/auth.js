@@ -6,5 +6,6 @@ exports.getLogin = (req, res, next) => {
 };
 
 exports.postLogin = (req, res, next) => {
+    req.isLoggeIn = true;
     res.redirect('/');
 }

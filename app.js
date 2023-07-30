@@ -13,7 +13,7 @@ const MONGODB_URI = "mongodb+srv://denys:295q6722822@cluster0.fk2cpgo.mongodb.ne
 
 const app = express();
 const store = new MongoDBStore({
-  url: MONGODB_URI,
+  uri: MONGODB_URI,
   collection: 'sessions'
 });
 
@@ -27,16 +27,6 @@ const authRoutes = require('./routes/auth');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({secret: 'my secret', resave: false, saveUninitialized: false, store: store}));
-
-app.use((req, res, next) => {
-  User.findById('64b6b96daf9dea22397d35b0')
-    .then(user => {
-      req.user = user;
-      console.log(" i am here ");
-      next();
-    })
-    .catch(err => console.log(err));
-});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);

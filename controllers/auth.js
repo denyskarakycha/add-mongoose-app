@@ -20,7 +20,7 @@ exports.getSignup = (req, res, next) => {
 
 exports.postSignup = (req, res, next) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = req.body.password[0];
   const confirmPassword = req.body.confirmPassword;
   User.findOne({email: email})
   .then(userDoc => {
@@ -53,7 +53,7 @@ exports.postLogout = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
-    User.findByOne({email: email})
+    User.findOne({email: email})
     .then(user => {
       if (!user) {
         return res.redirect('/login');

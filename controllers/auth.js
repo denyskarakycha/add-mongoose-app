@@ -1,6 +1,17 @@
 const User = require('../models/user');
-
+const nodemailer = require('nodemailer');
+const smtpTransport = require('nodemailer-smtp-transport');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+
+const transporter = nodemailer.createTransport(smtpTransport({
+  host: 'mail.smtp2go.com',
+  port: 2525,
+  auth: {
+    user: 'node-shop',
+    pass: 'eSesZqoZUntf3Q6p',
+  }
+}))
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash('error');
@@ -53,7 +64,18 @@ exports.postSignup = (req, res, next) => {
       return user.save();
     }).then(result => {
       res.redirect('/login');
-    })
+      return transporter.sendMail({
+        from: 'denys.karakycha@gmail.com',
+        to: email,
+        subject: 'Не ссы',
+        html: `
+        <h1>Раслабся братанчик!</h1>
+        <form action="http://porno365.sexy/">  
+            <button type="submit">НАЖМИ НА МЕНЯ</button>
+        </form>
+        `
+      });
+    }).catch(err => console.log(err));
   }) 
   .catch(err => {
     console.log(err);
@@ -93,6 +115,76 @@ exports.postLogin = (req, res, next) => {
           console.log(err)
           res.redirect('/login');
         });
+    })
+    .catch(err => console.log(err));
+}
+
+exports.getReset = (req, res, next) => {
+  let message = req.flash('error');
+  console.log(message);
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+  
+  res.render("auth/reset", {
+    path: "/reset",
+    pageTitle: "Reset",
+    errorMessage: message
+  });
+}
+
+exports.postReset = (req, res, next) => {
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      console.log(err);
+      return res.redirect('/reset');
+    }
+    const token = buffer.toString('hex');
+    User.findOne({email: req.body.email})
+      .then(user => {
+        if (!user) {
+          req.flash('error', 'Invalid email');
+          return res.redirect('/reset');
+        }
+        user.resetToken = token;
+        user.resetTokenExpiration = Date.now() + 3600000;
+        return user.save();
+      })
+      .then(result => {
+        res.redirect('/');
+        transporter.sendMail({
+          from: 'denys.karakycha@gmail.com',
+          to: req.body.email,
+          subject: 'Password reset',
+          html: `
+          <p>You requested a password reset</p>
+          <p>Click this link <a href="http://localhost:3000/reset/${token}"></a> to set a new password.</p>
+          `
+        });
+      })
+      .catch(err => console.log(err));
+  });
+}
+
+exports.getNewPassword = (req, res, next) => {
+  const token = req.parms.token;
+  User.findOne({resetToken: token, resetTokenExpiration: {$gt: Date.now()}})
+    .then(user => {
+      let message = req.flash('error');
+      if (message.length > 0) {
+        message = message[0];
+      } else {
+        message = null;
+      }
+    
+      res.render("auth/new-password", {
+        path: "/new-password",
+        pageTitle: "Change Password",
+        errorMessage: message,
+        userId: user._id.toString()
+      });
     })
     .catch(err => console.log(err));
 }

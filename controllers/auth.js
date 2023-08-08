@@ -42,29 +42,31 @@ exports.getSignup = (req, res, next) => {
   res.render("auth/signup", {
     path: "/signup",
     pageTitle: "signup",
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
   });
 };
 
 exports.postSignup = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password[0];
-  const confirmPassword = req.body.confirmPassword;
   const errors = validationResult(req);
   if (!errors.isEmpty()) { 
     return res.status(422).render("auth/signup", {
       path: "/signup",
       pageTitle: "signup",
-      errorMessage: errors.array()[0].msg 
+      errorMessage: errors.array()[0].msg,
+      oldInput: { email: email, 
+        password: password, 
+        confirmPassword: req.body.confirmPassword
+      }
     });
   }
-  User.findOne({email: email})
-  .then(userDoc => {
-    if (userDoc) {
-      req.flash('error', 'User already exists');
-      return res.redirect('/signup');
-    }
-    return bcrypt.hash(password, 12).then(hashedPassword => {
+  bcrypt.hash(password, 12).then(hashedPassword => {
       const user = new User({
         email: email,
         password: hashedPassword,
@@ -84,11 +86,7 @@ exports.postSignup = (req, res, next) => {
         </form>
         `
       });
-    }).catch(err => console.log(err));
-  }) 
-  .catch(err => {
-    console.log(err);
-  });
+    }).catch(err => console.log(err))
 };
 
 exports.postLogout = (req, res, next) => {
@@ -101,6 +99,14 @@ exports.postLogout = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) { 
+    return res.status(422).render("auth/login", {
+      path: "/login",
+      pageTitle: "login",
+      errorMessage: errors.array()[0].msg 
+    });
+  } 
     User.findOne({email: email})
     .then(user => {
       if (!user) {

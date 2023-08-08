@@ -1,7 +1,9 @@
 const express = require("express");
 const { check, body } = require("express-validator");
+const bcrypt = require('bcryptjs');
 
 const authController = require("../controllers/auth");
+const User = require("../models/user");
 
 const router = express.Router();
 
@@ -12,28 +14,42 @@ router.get("/signup", authController.getSignup);
 router.post(
   "/signup",
   [
-  check("email")
-    .isEmail()
-    .withMessage("Please enter a valid email.")
-    .custom((value, {req}) => { // кастом для того щоб створювати свої помилки, от як наприклад створити заборону на якійсь адрес
-        if (value === 'test@test.com') {
-            throw new Error ('This email forbidden'); 
-        }
-        return true;
+    check("email")
+      .isEmail()
+      .withMessage("Please enter a valid email.")
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then((userDoc) => {
+          if (userDoc) {
+            return Promise.reject("User already exists");
+          }
+        });
+      }),
+    body("password", "Please enter password > 5 characters.")
+      .isLength({ min: 5 })
+      .isAlphanumeric(),
+    body("confirmPassword").custom((value, { req }) => {
+        console.log(value + "=" + req.body.confirmPassword);
+      if (value !== req.body.password) {
+        throw new Error("Passwords have to match");
+      }
+      return true;
     }),
-  body('password', 'Please enter password > 5 characters.')
-    .isLength({min: 5})
-    .isAlphanumeric(),
-  body('confirmPassword').custom((value, {req}) => {
-    if (value !== req.body.password) {
-        throw new Error('Passwords have to match');
-    }
-  })
   ],
   authController.postSignup
 );
 
-router.post("/login", authController.postLogin);
+router.post(
+  "/login",
+[
+  check("email")
+   .isEmail()
+    .withMessage("Please enter a valid email."),
+    body("password", "Please entered invalid.")
+      .isLength({ min: 5 })
+      .isAlphanumeric()
+],
+  authController.postLogin
+);
 
 router.post("/logout", authController.postLogout);
 

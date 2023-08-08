@@ -23,17 +23,20 @@ router.post(
             return Promise.reject("User already exists");
           }
         });
-      }),
+      })
+      .normalizeEmail(),
     body("password", "Please enter password > 5 characters.")
       .isLength({ min: 5 })
-      .isAlphanumeric(),
+      .isAlphanumeric()
+      .trim(),
     body("confirmPassword").custom((value, { req }) => {
         console.log(value + "=" + req.body.confirmPassword);
       if (value !== req.body.password) {
         throw new Error("Passwords have to match");
       }
       return true;
-    }),
+    })
+    .trim(),
   ],
   authController.postSignup
 );
@@ -43,10 +46,12 @@ router.post(
 [
   check("email")
    .isEmail()
-    .withMessage("Please enter a valid email."),
+    .withMessage("Please enter a valid email.")
+    .normalizeEmail(),
     body("password", "Please entered invalid.")
       .isLength({ min: 5 })
       .isAlphanumeric()
+      .trim()
 ],
   authController.postLogin
 );

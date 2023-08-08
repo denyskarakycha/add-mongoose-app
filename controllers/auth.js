@@ -27,7 +27,12 @@ exports.getLogin = (req, res, next) => {
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+    },
+    validationError: []
   });
 };
 
@@ -107,7 +112,12 @@ exports.postLogin = (req, res, next) => {
     return res.status(422).render("auth/login", {
       path: "/login",
       pageTitle: "login",
-      errorMessage: errors.array()[0].msg 
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+      },
+      validationError: errors.array()
     });
   } 
     User.findOne({email: email})

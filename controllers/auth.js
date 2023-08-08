@@ -4,6 +4,7 @@ const smtpTransport = require('nodemailer-smtp-transport');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { validationResult } = require('express-validator');
+const { ValidationError } = require('sequelize');
 
 const transporter = nodemailer.createTransport(smtpTransport({
   host: 'mail.smtp2go.com',
@@ -47,7 +48,8 @@ exports.getSignup = (req, res, next) => {
       email: '',
       password: '',
       confirmPassword: ''
-    }
+    },
+    validationError: []
   });
 };
 
@@ -63,7 +65,8 @@ exports.postSignup = (req, res, next) => {
       oldInput: { email: email, 
         password: password, 
         confirmPassword: req.body.confirmPassword
-      }
+      },
+      validationError: errors.array()
     });
   }
   bcrypt.hash(password, 12).then(hashedPassword => {

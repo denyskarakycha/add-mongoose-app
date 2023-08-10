@@ -4,7 +4,6 @@ const smtpTransport = require('nodemailer-smtp-transport');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { validationResult } = require('express-validator');
-const { ValidationError } = require('sequelize');
 
 const transporter = nodemailer.createTransport(smtpTransport({
   host: 'mail.smtp2go.com',
@@ -94,7 +93,11 @@ exports.postSignup = (req, res, next) => {
         </form>
         `
       });
-    }).catch(err => console.log(err))
+    }).catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+  });
 };
 
 exports.postLogout = (req, res, next) => {
@@ -144,7 +147,11 @@ exports.postLogin = (req, res, next) => {
           res.redirect('/login');
         });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+  });
 }
 
 exports.getReset = (req, res, next) => {
@@ -192,7 +199,11 @@ exports.postReset = (req, res, next) => {
           `
         });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
   });
 }
 
@@ -215,7 +226,11 @@ exports.getNewPassword = (req, res, next) => {
         userId: user._id.toString()
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+  });
 }
 
 exports.postNewPassword = (req, res, next) => {
@@ -236,5 +251,9 @@ exports.postNewPassword = (req, res, next) => {
     return resetUser.save();
   })
   .then(result => res.redirect('/login'))
-  .catch(err => console.log(err))
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+});
 }

@@ -21,6 +21,23 @@ const store = new MongoDBStore({
   collection: "sessions",
 });
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+   return cb(null, true);
+  } 
+  return cb(null, false);
+}
+
+
 const csrfProtection = csrf();
 
 app.set("view engine", "ejs");
@@ -29,10 +46,10 @@ app.set("views", "views");
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
-const { error } = require("console");
 
-app.use(multer({dest: 'images'}).single('image'));
+
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
@@ -78,10 +95,11 @@ app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
   // res.status(error.httpStatusCode).... те як моджна відправляти любий статус сюди де він буде відловленийі
-  res.status(500)
+  console.log(error);
+ res.status(500)
     .render("500", {
       pageTitle: "Server errror!",
-      path: "/500"
+      path: "/500",
     });
 });
 

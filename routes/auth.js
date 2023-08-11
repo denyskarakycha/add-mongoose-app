@@ -27,8 +27,8 @@ router.post(
       .normalizeEmail(),
     body("password", "Please enter password > 5 characters.")
       .isLength({ min: 5 })
-      .isAlphanumeric()
-      .trim(),
+      .isAlphanumeric(),
+      //.trim(),
     body("confirmPassword").custom((value, { req }) => {
         console.log(value + "=" + req.body.confirmPassword);
       if (value !== req.body.password) {
@@ -51,7 +51,7 @@ router.post(
     body("password", "Please entered invalid.")
       .isLength({ min: 5 })
       .isAlphanumeric()
-      .trim()
+      //.trim()
 ],
   authController.postLogin
 );

@@ -126,12 +126,13 @@ exports.postLogin = (req, res, next) => {
     User.findOne({email: email})
     .then(user => {
       if (!user) {
-        req.flash('error', 'Invalid email or password');
+        req.flash('error', 'Invalid email');
         return res.redirect('/login');
       }
       bcrypt.compare(password, user.password)
         .then(doMatch => {
           if (doMatch) {
+            //console.log(doMatch)
             req.session.user = user;
             req.session.isLoggedIn = true;
             return req.session.save(err => { 
@@ -139,7 +140,7 @@ exports.postLogin = (req, res, next) => {
               res.redirect('/');
             })
           }
-          req.flash('error', 'Invalid email or password');
+          req.flash('error', 'Invalid password');
           return res.redirect('/login');
         })
         .catch(err => {
@@ -233,7 +234,7 @@ exports.getNewPassword = (req, res, next) => {
   });
 }
 
-exports.postNewPassword = (req, res, next) => {
+exports. postNewPassword = (req, res, next) => {
   const newPassword = req.body.password;
   const userId = req.body.userId;
   const passwordToken = req.body.passwordToken;

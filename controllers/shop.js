@@ -3,6 +3,7 @@ const Order = require('../models/order');
 
 const fs = require('fs');
 const path = require('path');
+const { error } = require('console');
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -151,14 +152,35 @@ exports.getOrders = (req, res, next) => {
 
 exports.getInvoice = (req, res, next) => {
   const orderId = req.params.orderId;
-  const invoiceName = 'invoice-' + orderId + '.pdf'; 
-  const invoicePath = path.join('data', 'invoices', invoiceName)
-  fs.readFile(invoicePath, (err, data) => {
-    if (err) {
-      return next(err);
-    }
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename ="'+invoiceName+'"');
-    res.send(data);
+  Order.findById(orderId)
+    .then(order => {
+      if (!order) {
+        return next(new Error('No order found.'));
+      }
+      if (order.user.userId.toString() !== req.user._id.toString()) {
+        return next(new Error('Unauthorized!'))
+      }
+      const invoiceName = 'invoice-' + orderId + '.pdf'; 
+      const invoicePath = path.join('data', 'invoices', invoiceName)
+
+      const file = fs.createReadStream(invoicePath);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename ="'+invoiceName+'"');
+      file.pipe(res);
+
+      // for small file
+      // fs.readFile(invoicePath, (err, data) => {
+      // if (err) {
+      //   return next(err);
+      // }
+      // res.setHeader('Content-Type', 'application/pdf');
+      // res.setHeader('Content-Disposition', 'inline; filename ="'+invoiceName+'"');
+      // res.send(data);
+  })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
   });
+  
 };

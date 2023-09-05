@@ -37,7 +37,6 @@ const fileFilter = (req, file, cb) => {
   return cb(null, false);
 }
 
-
 const csrfProtection = csrf();
 
 app.set("view engine", "ejs");

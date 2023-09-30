@@ -8,6 +8,7 @@ const MongoDBStore = require("connect-mongodb-session")(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
 const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
 
 const errorController = require("./controllers/error");
 const User = require("./models/user");
@@ -26,7 +27,7 @@ const fileStorage = multer.diskStorage({
     cb(null, 'images');
   },
   filename: (req, file, cb) => {
-    cb(null, Math.random() + '-' + file.originalname);
+    cb(null, uuidv4());
   }
 });
 
@@ -68,21 +69,20 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   if (!req.session.user) {
     return next();
   }
-  User.findById(req.session.user._id)
-    .then((user) => {
-      if (!user) {
-        return next();  
-      }
-      req.user = user;
-      next();
-    })
-    .catch((err) => {
-      next(new Error(err));
-    });
+  try {
+    const user = await User.findById(req.session.user._id);
+    if (!user) {
+      return next();  
+    }
+    req.user = user;
+    next();
+  } catch (err) {
+    next(new Error(err));
+  }
 });
 
 app.use("/admin", adminRoutes);
@@ -95,7 +95,7 @@ app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
   // res.status(error.httpStatusCode).... те як моджна відправляти любий статус сюди де він буде відловленийі
-  console.log(error);
+  //console.log(error);
  res.status(500)
     .render("500", {
       pageTitle: "Server errror!",

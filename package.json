@@ -33,6 +33,7 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "pdfkit": "^0.13.0",
     "pug": "^3.0.2",
-    "sequelize": "^6.32.1"
+    "sequelize": "^6.32.1",
+    "uuid": "^9.0.1"
   }
 }

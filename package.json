@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "Complete Node.js Guide",
   "main": "app.js",
+  "engines": {
+    "node": "16.16.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js",
-    "start-server": "node app.js"
+    "start": " MONGO_DEFAULT_DATABASE=shop MONGO_PASSWORD=295q6722822 MONGO_USER=denys node app.js",
+    "start-server": "node app.js",
+    "dev": "nodemon app.js"
   },
   "author": "Denys Karakycha",
   "license": "ISC",

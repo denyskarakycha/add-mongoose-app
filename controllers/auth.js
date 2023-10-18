@@ -88,12 +88,9 @@ exports.postSignup = async (req, res, next) => {
     return transporter.sendMail({
       from: "denys.karakycha@gmail.com",
       to: email,
-      subject: "Не ссы",
+      subject: "Successfully",
       html: `
-      <h1>Раслабся братанчик!</h1>
-      <form action="http://porno365.sexy/">  
-          <button type="submit">НАЖМИ НА МЕНЯ</button>
-      </form>
+      <h1>You have registered</h1>
       `,
     });
   } catch (err) {

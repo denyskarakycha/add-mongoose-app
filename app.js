@@ -18,9 +18,11 @@ const morgan = require('morgan');
 const errorController = require("./controllers/error");
 const User = require("./models/user");
 
-const MONGODB_URI =
-  `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.fk2cpgo.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
+// const MONGODB_URI =
+//   `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.fk2cpgo.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
 
+const MONGODB_URI =
+  `mongodb+srv://denys:295q6722822@cluster0.fk2cpgo.mongodb.net/shop`;
 const app = express();
 const store = new MongoDBStore({
   uri: MONGODB_URI,
@@ -104,6 +106,7 @@ app.use(async (req, res, next) => {
     next(new Error(err));
   }
 });
+
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
